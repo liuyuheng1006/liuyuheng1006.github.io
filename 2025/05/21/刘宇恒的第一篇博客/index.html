@@ -4,8 +4,13 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Hello World, Hexo">
-    <meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hex">
+    <meta name="keywords" content="刘宇恒的第一篇博客, Hexo">
+    <meta name="description" content="第3次作业：MPI编程实验ZY2406217 刘宇恒一、实验内容与方法1. 实验内容
+
+用MPI编程实现矩阵并行乘法程序
+矩阵大小≥8000×8000，矩阵元素为双精度浮点数(约需要480MB内存)
+编程语言：C&amp;#x2F;C++
+比较并行">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -17,7 +22,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>Hello World | Hexo</title>
+    <title>刘宇恒的第一篇博客 | Hexo</title>
     <link rel="icon" type="image/png" href="/favicon.png">
     
 
@@ -334,12 +339,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/12.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/2.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">Hello World</h1>
+                    <h1 class="description center-align post-title">刘宇恒的第一篇博客</h1>
                 </div>
             </div>
         </div>
@@ -396,19 +401,140 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+                <h1 id="第3次作业：MPI编程实验"><a href="#第3次作业：MPI编程实验" class="headerlink" title="第3次作业：MPI编程实验"></a>第3次作业：MPI编程实验</h1><h3 id="ZY2406217-刘宇恒"><a href="#ZY2406217-刘宇恒" class="headerlink" title="ZY2406217 刘宇恒"></a>ZY2406217 刘宇恒</h3><h2 id="一、实验内容与方法"><a href="#一、实验内容与方法" class="headerlink" title="一、实验内容与方法"></a>一、实验内容与方法</h2><h3 id="1-实验内容"><a href="#1-实验内容" class="headerlink" title="1. 实验内容"></a>1. 实验内容</h3><blockquote>
+<ul>
+<li>用MPI编程实现矩阵并行乘法程序</li>
+<li>矩阵大小≥8000×8000，矩阵元素为双精度浮点数(约需要480MB内存)</li>
+<li>编程语言：C&#x2F;C++</li>
+<li>比较并行与串行程序的加速比</li>
+<li>注意:<ul>
+<li>统计计算时间时，应排除准备数据的时间(如果有I&#x2F;O)</li>
+<li>统并行程序的性能可扩展性：线程个数可变、局部性、</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<h3 id="2-实验方法"><a href="#2-实验方法" class="headerlink" title="2. 实验方法"></a>2. 实验方法</h3><ul>
+<li><strong>串行算法</strong>：三重循环直接计算，优化循环顺序为 <code>i-&gt;k-&gt;j</code> 以提高缓存命中率。</li>
+<li><strong>并行算法</strong>：<ul>
+<li><strong>数据划分</strong>：主进程（rank&#x3D;0）将矩阵 <code>A</code> 按行分块，通过 <code>MPI_Scatter</code> 分发到各进程。</li>
+<li><strong>广播共享数据</strong>：矩阵 <code>B</code> 通过 <code>MPI_Bcast</code> 广播到所有进程。</li>
+<li><strong>局部计算</strong>：各进程计算分块行与矩阵 <code>B</code> 的乘积，结果存入 <code>local_C</code>。</li>
+<li><strong>结果收集</strong>：通过 <code>MPI_Gather</code> 将各进程的 <code>local_C</code> 汇总到主进程的 <code>C</code> 中。</li>
+</ul>
+</li>
+<li><strong>关键函数</strong>：<code>MPI_Scatter</code>, <code>MPI_Bcast</code>, <code>MPI_Gather</code>。</li>
+</ul>
+<h2 id="二、实验过程"><a href="#二、实验过程" class="headerlink" title="二、实验过程"></a>二、实验过程</h2><h3 id="1-实验环境"><a href="#1-实验环境" class="headerlink" title="1. 实验环境"></a>1. 实验环境</h3><p>**Intel Xeon Gold 6230R CPU **</p>
+<ul>
+<li><strong>核心与线程</strong><ul>
+<li><strong>核心数</strong>: <strong>26核</strong></li>
+<li><strong>线程数</strong>: 52线程，支持超线程技术，每个核心处理2个线程。</li>
+<li><strong>多任务能力</strong>: 适合高密度计算任务，如科学模拟、大规模数据处理。</li>
+</ul>
+</li>
+<li><strong>频率与性能</strong><ul>
+<li><strong>基础频率</strong>: 2.10 GHz</li>
+<li><strong>最大频率</strong>: 4.00 GHz</li>
+<li><strong>性能特点: 高核心数适合并行计。</strong></li>
+</ul>
+</li>
+</ul>
+<h3 id="2-实验步骤"><a href="#2-实验步骤" class="headerlink" title="2. 实验步骤"></a>2. 实验步骤</h3><ul>
+<li><p><code>init_matrix</code>: 初始化随机矩阵。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">init_matrix</span><span class="params">(<span class="type">double</span> *matrix, <span class="type">int</span> N)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; N * N; ++i) &#123;</span><br><span class="line">        matrix[i] = (<span class="type">double</span>)rand() / RAND_MAX;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>serial_matmul</code>: 串行矩阵乘法。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">serial_matmul</span><span class="params">(<span class="type">double</span> *A, <span class="type">double</span> *B, <span class="type">double</span> *C, <span class="type">int</span> N)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; N; ++i) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> k = <span class="number">0</span>; k &lt; N; ++k) &#123;</span><br><span class="line">            <span class="type">double</span> a = A[i * N + k];</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; N; ++j) &#123;</span><br><span class="line">                C[i * N + j] += a * B[k * N + j];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>parallel_matmul</code>: MPI并行乘法。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">parallel_matmul</span><span class="params">(<span class="type">int</span> rank, <span class="type">int</span> size, <span class="type">double</span> *A, <span class="type">double</span> *B, <span class="type">double</span> *C, <span class="type">int</span> N)</span> &#123;</span><br><span class="line">    <span class="type">int</span> rows_per_proc = N / size;</span><br><span class="line">    <span class="type">double</span> *local_A = (<span class="type">double</span> *)<span class="built_in">malloc</span>(rows_per_proc * N * <span class="keyword">sizeof</span>(<span class="type">double</span>));</span><br><span class="line">    <span class="type">double</span> *local_C = (<span class="type">double</span> *)<span class="built_in">malloc</span>(rows_per_proc * N * <span class="keyword">sizeof</span>(<span class="type">double</span>));</span><br><span class="line"></span><br><span class="line">    MPI_Scatter(A, rows_per_proc * N, MPI_DOUBLE, local_A, rows_per_proc * N, MPI_DOUBLE, <span class="number">0</span>, MPI_COMM_WORLD);</span><br><span class="line">    MPI_Bcast(B, N * N, MPI_DOUBLE, <span class="number">0</span>, MPI_COMM_WORLD);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; rows_per_proc * N; ++i) &#123;</span><br><span class="line">        local_C[i] = <span class="number">0.0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; rows_per_proc; ++i) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> k = <span class="number">0</span>; k &lt; N; ++k) &#123;</span><br><span class="line">            <span class="type">double</span> a = local_A[i * N + k];</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; N; ++j) &#123;</span><br><span class="line">                local_C[i * N + j] += a * B[k * N + j];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    MPI_Gather(local_C, rows_per_proc * N, MPI_DOUBLE, C, rows_per_proc * N, MPI_DOUBLE, <span class="number">0</span>, MPI_COMM_WORLD);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">free</span>(local_A);</span><br><span class="line">    <span class="built_in">free</span>(local_C);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>main</code>: 控制逻辑与性能统计。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span> &#123;</span><br><span class="line">    MPI_Init(&amp;argc, &amp;argv);</span><br><span class="line">    <span class="type">int</span> rank, size;</span><br><span class="line">    MPI_Comm_rank(MPI_COMM_WORLD, &amp;rank);</span><br><span class="line">    MPI_Comm_size(MPI_COMM_WORLD, &amp;size);</span><br><span class="line"></span><br><span class="line">    <span class="type">const</span> <span class="type">int</span> N = <span class="number">8000</span>;</span><br><span class="line">    <span class="type">double</span> *A = <span class="literal">NULL</span>, *B = (<span class="type">double</span> *)<span class="built_in">malloc</span>(N * N * <span class="keyword">sizeof</span>(<span class="type">double</span>)), *C = <span class="literal">NULL</span>; </span><br><span class="line">    <span class="type">double</span> start_time, end_time;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (rank == <span class="number">0</span>) &#123;</span><br><span class="line">        A = (<span class="type">double</span> *)<span class="built_in">malloc</span>(N * N * <span class="keyword">sizeof</span>(<span class="type">double</span>));</span><br><span class="line">        C = (<span class="type">double</span> *)<span class="built_in">malloc</span>(N * N * <span class="keyword">sizeof</span>(<span class="type">double</span>));</span><br><span class="line">        init_matrix(A, N);</span><br><span class="line">        init_matrix(B, N);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    MPI_Barrier(MPI_COMM_WORLD);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (size == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (rank == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; N * N; ++i) C[i] = <span class="number">0.0</span>;</span><br><span class="line">            start_time = MPI_Wtime();</span><br><span class="line">            serial_matmul(A, B, C, N);</span><br><span class="line">            end_time = MPI_Wtime();</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;Serial time: %.2f s\n&quot;</span>, end_time - start_time);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (N % size != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (rank == <span class="number">0</span>) <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;N must be divisible by size\n&quot;</span>);</span><br><span class="line">            MPI_Finalize();</span><br><span class="line">            <span class="built_in">free</span>(B); </span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (rank == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; N * N; ++i) C[i] = <span class="number">0.0</span>;</span><br><span class="line">            start_time = MPI_Wtime();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        parallel_matmul(rank, size, A, B, C, N);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (rank == <span class="number">0</span>) &#123;</span><br><span class="line">            end_time = MPI_Wtime();</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;Parallel time (%d procs): %.2f s\n&quot;</span>, size, end_time - start_time);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (rank == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">free</span>(A);</span><br><span class="line">        <span class="built_in">free</span>(C);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">free</span>(B);</span><br><span class="line"></span><br><span class="line">    MPI_Finalize();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+</li>
+<li><p><strong>程序编译和执行</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编译</span></span><br><span class="line">mpicc -O3 -o mpi_matmul mpi_matmul.c -lmpi</span><br><span class="line"><span class="comment"># 串行模式</span></span><br><span class="line">mpiexec -n 1 ./mpi_matmul</span><br><span class="line"><span class="comment"># 并行模式（4进程）</span></span><br><span class="line">mpiexec -n 4 ./mpi_matmul</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="三、实验结果与分析"><a href="#三、实验结果与分析" class="headerlink" title="三、实验结果与分析"></a>三、实验结果与分析</h2><h3 id="1-实验结果"><a href="#1-实验结果" class="headerlink" title="1. 实验结果"></a>1. 实验结果</h3><table>
+<thead>
+<tr>
+<th>进程数</th>
+<th>计算时间（秒）</th>
+<th>加速比（vs单线程）</th>
+<th>并行效率（%）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>2037.66</td>
+<td>1.00x</td>
+<td>100.0</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>注：图片中完整数据见附录</p>
+</blockquote>
+<h3 id="2-实验结果分析"><a href="#2-实验结果分析" class="headerlink" title="2. 实验结果分析"></a>2. 实验结果分析</h3><p>实验数据验证了以下结论：</p>
+<ul>
+<li><p><strong>并行有效性</strong>：8线程实现6.65-7.02倍加速，达到83-88%的并行效率</p>
+</li>
+<li><p>更大数据集（40,000k）的并行效率更高，猜想可能的原因是：</p>
+<ul>
+<li>任务粒度更优，更多子任务分摊同步开销。</li>
+<li>缓存利用率提升，L3缓存命中率增加。</li>
+</ul>
+</li>
+</ul>
+<h2 id="附录：原始实验数据"><a href="#附录：原始实验数据" class="headerlink" title="附录：原始实验数据"></a>附录：原始实验数据</h2><ul>
+<li><h3 id="20-000k双精度浮点数排序实验结果："><a href="#20-000k双精度浮点数排序实验结果：" class="headerlink" title="20,000k双精度浮点数排序实验结果："></a>20,000k双精度浮点数排序实验结果：</h3><p><img src="C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20250424121156137.png" alt="image-20250424121156137"></p>
+</li>
+<li><h3 id="40-000k双精度浮点数排序实验结果："><a href="#40-000k双精度浮点数排序实验结果：" class="headerlink" title="40,000k双精度浮点数排序实验结果："></a>40,000k双精度浮点数排序实验结果：</h3><p><img src="C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20250424121344894.png" alt="image-20250424121344894"></p>
+</li>
+</ul>
 
                 
             </div>
@@ -435,7 +561,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="http://example.com/2025/05/21/hello-world/">http://example.com/2025/05/21/hello-world/</a>
+                    <a href="http://example.com/2025/05/21/%E5%88%98%E5%AE%87%E6%81%92%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/">http://example.com/2025/05/21/%E5%88%98%E5%AE%87%E6%81%92%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -549,9 +675,10 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+                <i class="far fa-dot-circle"></i>&nbsp;Current
+            </div>
             <div class="card">
                 <a href="/2025/05/21/%E5%88%98%E5%AE%87%E6%81%92%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/">
                     <div class="card-image">
@@ -569,9 +696,9 @@
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2025-05-21
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2025-05-21
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
@@ -580,6 +707,7 @@
                         </span>
                     </div>
                 </div>
+
                 
             </div>
         </div>
@@ -587,7 +715,7 @@
         
         <div class="article col s12 m6" data-aos="fade-up">
             <div class="article-badge right-badge text-color">
-                Current&nbsp;<i class="far fa-dot-circle"></i>
+                Next&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
                 <a href="/2025/05/21/hello-world/">
@@ -617,7 +745,6 @@
                         </span>
                     </div>
                 </div>
-
                 
             </div>
         </div>
