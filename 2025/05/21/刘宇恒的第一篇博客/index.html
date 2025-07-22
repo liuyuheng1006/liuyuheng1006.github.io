@@ -57,7 +57,7 @@
 
     <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
 
-<meta name="generator" content="Hexo 7.3.0"><link rel="stylesheet" href="/css/prism.css" type="text/css">
+<meta name="generator" content="Hexo 7.3.0"><link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css">
 <link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
 
 
@@ -397,6 +397,9 @@
         <hr class="clearfix">
 
         
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.min.css">
+        
 
         
 
@@ -443,20 +446,119 @@
 </ul>
 <h3 id="2-实验步骤"><a href="#2-实验步骤" class="headerlink" title="2. 实验步骤"></a>2. 实验步骤</h3><ul>
 <li><p><code>init_matrix</code>: 初始化随机矩阵。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">init_matrix</span><span class="params">(<span class="type">double</span> *matrix, <span class="type">int</span> N)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; N * N; ++i) &#123;</span><br><span class="line">        matrix[i] = (<span class="type">double</span>)rand() / RAND_MAX;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c">void init_matrix(double *matrix, int N) &#123;
+    for (int i &#x3D; 0; i &lt; N * N; ++i) &#123;
+        matrix[i] &#x3D; (double)rand() &#x2F; RAND_MAX;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 </li>
 <li><p><code>serial_matmul</code>: 串行矩阵乘法。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">serial_matmul</span><span class="params">(<span class="type">double</span> *A, <span class="type">double</span> *B, <span class="type">double</span> *C, <span class="type">int</span> N)</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; N; ++i) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> k = <span class="number">0</span>; k &lt; N; ++k) &#123;</span><br><span class="line">            <span class="type">double</span> a = A[i * N + k];</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; N; ++j) &#123;</span><br><span class="line">                C[i * N + j] += a * B[k * N + j];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c">void serial_matmul(double *A, double *B, double *C, int N) &#123;
+    for (int i &#x3D; 0; i &lt; N; ++i) &#123;
+        for (int k &#x3D; 0; k &lt; N; ++k) &#123;
+            double a &#x3D; A[i * N + k];
+            for (int j &#x3D; 0; j &lt; N; ++j) &#123;
+                C[i * N + j] +&#x3D; a * B[k * N + j];
+            &#125;
+        &#125;
+    &#125;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 </li>
 <li><p><code>parallel_matmul</code>: MPI并行乘法。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">parallel_matmul</span><span class="params">(<span class="type">int</span> rank, <span class="type">int</span> size, <span class="type">double</span> *A, <span class="type">double</span> *B, <span class="type">double</span> *C, <span class="type">int</span> N)</span> &#123;</span><br><span class="line">    <span class="type">int</span> rows_per_proc = N / size;</span><br><span class="line">    <span class="type">double</span> *local_A = (<span class="type">double</span> *)<span class="built_in">malloc</span>(rows_per_proc * N * <span class="keyword">sizeof</span>(<span class="type">double</span>));</span><br><span class="line">    <span class="type">double</span> *local_C = (<span class="type">double</span> *)<span class="built_in">malloc</span>(rows_per_proc * N * <span class="keyword">sizeof</span>(<span class="type">double</span>));</span><br><span class="line"></span><br><span class="line">    MPI_Scatter(A, rows_per_proc * N, MPI_DOUBLE, local_A, rows_per_proc * N, MPI_DOUBLE, <span class="number">0</span>, MPI_COMM_WORLD);</span><br><span class="line">    MPI_Bcast(B, N * N, MPI_DOUBLE, <span class="number">0</span>, MPI_COMM_WORLD);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; rows_per_proc * N; ++i) &#123;</span><br><span class="line">        local_C[i] = <span class="number">0.0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; rows_per_proc; ++i) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> k = <span class="number">0</span>; k &lt; N; ++k) &#123;</span><br><span class="line">            <span class="type">double</span> a = local_A[i * N + k];</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> j = <span class="number">0</span>; j &lt; N; ++j) &#123;</span><br><span class="line">                local_C[i * N + j] += a * B[k * N + j];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    MPI_Gather(local_C, rows_per_proc * N, MPI_DOUBLE, C, rows_per_proc * N, MPI_DOUBLE, <span class="number">0</span>, MPI_COMM_WORLD);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">free</span>(local_A);</span><br><span class="line">    <span class="built_in">free</span>(local_C);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c">void parallel_matmul(int rank, int size, double *A, double *B, double *C, int N) &#123;
+    int rows_per_proc &#x3D; N &#x2F; size;
+    double *local_A &#x3D; (double *)malloc(rows_per_proc * N * sizeof(double));
+    double *local_C &#x3D; (double *)malloc(rows_per_proc * N * sizeof(double));
+
+    MPI_Scatter(A, rows_per_proc * N, MPI_DOUBLE, local_A, rows_per_proc * N, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(B, N * N, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+    for (int i &#x3D; 0; i &lt; rows_per_proc * N; ++i) &#123;
+        local_C[i] &#x3D; 0.0;
+    &#125;
+
+    for (int i &#x3D; 0; i &lt; rows_per_proc; ++i) &#123;
+        for (int k &#x3D; 0; k &lt; N; ++k) &#123;
+            double a &#x3D; local_A[i * N + k];
+            for (int j &#x3D; 0; j &lt; N; ++j) &#123;
+                local_C[i * N + j] +&#x3D; a * B[k * N + j];
+            &#125;
+        &#125;
+    &#125;
+
+    MPI_Gather(local_C, rows_per_proc * N, MPI_DOUBLE, C, rows_per_proc * N, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+    free(local_A);
+    free(local_C);
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 </li>
 <li><p><code>main</code>: 控制逻辑与性能统计。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span> &#123;</span><br><span class="line">    MPI_Init(&amp;argc, &amp;argv);</span><br><span class="line">    <span class="type">int</span> rank, size;</span><br><span class="line">    MPI_Comm_rank(MPI_COMM_WORLD, &amp;rank);</span><br><span class="line">    MPI_Comm_size(MPI_COMM_WORLD, &amp;size);</span><br><span class="line"></span><br><span class="line">    <span class="type">const</span> <span class="type">int</span> N = <span class="number">8000</span>;</span><br><span class="line">    <span class="type">double</span> *A = <span class="literal">NULL</span>, *B = (<span class="type">double</span> *)<span class="built_in">malloc</span>(N * N * <span class="keyword">sizeof</span>(<span class="type">double</span>)), *C = <span class="literal">NULL</span>; </span><br><span class="line">    <span class="type">double</span> start_time, end_time;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (rank == <span class="number">0</span>) &#123;</span><br><span class="line">        A = (<span class="type">double</span> *)<span class="built_in">malloc</span>(N * N * <span class="keyword">sizeof</span>(<span class="type">double</span>));</span><br><span class="line">        C = (<span class="type">double</span> *)<span class="built_in">malloc</span>(N * N * <span class="keyword">sizeof</span>(<span class="type">double</span>));</span><br><span class="line">        init_matrix(A, N);</span><br><span class="line">        init_matrix(B, N);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    MPI_Barrier(MPI_COMM_WORLD);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (size == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (rank == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; N * N; ++i) C[i] = <span class="number">0.0</span>;</span><br><span class="line">            start_time = MPI_Wtime();</span><br><span class="line">            serial_matmul(A, B, C, N);</span><br><span class="line">            end_time = MPI_Wtime();</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;Serial time: %.2f s\n&quot;</span>, end_time - start_time);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (N % size != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (rank == <span class="number">0</span>) <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;N must be divisible by size\n&quot;</span>);</span><br><span class="line">            MPI_Finalize();</span><br><span class="line">            <span class="built_in">free</span>(B); </span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (rank == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; N * N; ++i) C[i] = <span class="number">0.0</span>;</span><br><span class="line">            start_time = MPI_Wtime();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        parallel_matmul(rank, size, A, B, C, N);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (rank == <span class="number">0</span>) &#123;</span><br><span class="line">            end_time = MPI_Wtime();</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;Parallel time (%d procs): %.2f s\n&quot;</span>, size, end_time - start_time);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (rank == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">free</span>(A);</span><br><span class="line">        <span class="built_in">free</span>(C);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">free</span>(B);</span><br><span class="line"></span><br><span class="line">    MPI_Finalize();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="line-numbers language-c" data-language="c"><code class="language-c">int main(int argc, char **argv) &#123;
+    MPI_Init(&amp;argc, &amp;argv);
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &amp;rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &amp;size);
+
+    const int N &#x3D; 8000;
+    double *A &#x3D; NULL, *B &#x3D; (double *)malloc(N * N * sizeof(double)), *C &#x3D; NULL; 
+    double start_time, end_time;
+
+    if (rank &#x3D;&#x3D; 0) &#123;
+        A &#x3D; (double *)malloc(N * N * sizeof(double));
+        C &#x3D; (double *)malloc(N * N * sizeof(double));
+        init_matrix(A, N);
+        init_matrix(B, N);
+    &#125;
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    if (size &#x3D;&#x3D; 1) &#123;
+        if (rank &#x3D;&#x3D; 0) &#123;
+            for (int i &#x3D; 0; i &lt; N * N; ++i) C[i] &#x3D; 0.0;
+            start_time &#x3D; MPI_Wtime();
+            serial_matmul(A, B, C, N);
+            end_time &#x3D; MPI_Wtime();
+            printf(&quot;Serial time: %.2f s\n&quot;, end_time - start_time);
+        &#125;
+    &#125; else &#123;
+        if (N % size !&#x3D; 0) &#123;
+            if (rank &#x3D;&#x3D; 0) fprintf(stderr, &quot;N must be divisible by size\n&quot;);
+            MPI_Finalize();
+            free(B); 
+            return 1;
+        &#125;
+
+        if (rank &#x3D;&#x3D; 0) &#123;
+            for (int i &#x3D; 0; i &lt; N * N; ++i) C[i] &#x3D; 0.0;
+            start_time &#x3D; MPI_Wtime();
+        &#125;
+
+        parallel_matmul(rank, size, A, B, C, N);
+
+        if (rank &#x3D;&#x3D; 0) &#123;
+            end_time &#x3D; MPI_Wtime();
+            printf(&quot;Parallel time (%d procs): %.2f s\n&quot;, size, end_time - start_time);
+        &#125;
+    &#125;
+
+    if (rank &#x3D;&#x3D; 0) &#123;
+        free(A);
+        free(C);
+    &#125;
+    free(B);
+
+    MPI_Finalize();
+    return 0;
+&#125;<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 </li>
 <li><p><strong>程序编译和执行</strong>：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编译</span></span><br><span class="line">mpicc -O3 -o mpi_matmul mpi_matmul.c -lmpi</span><br><span class="line"><span class="comment"># 串行模式</span></span><br><span class="line">mpiexec -n 1 ./mpi_matmul</span><br><span class="line"><span class="comment"># 并行模式（4进程）</span></span><br><span class="line">mpiexec -n 4 ./mpi_matmul</span><br></pre></td></tr></table></figure></li>
+<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"># 编译
+mpicc -O3 -o mpi_matmul mpi_matmul.c -lmpi
+# 串行模式
+mpiexec -n 1 .&#x2F;mpi_matmul
+# 并行模式（4进程）
+mpiexec -n 4 .&#x2F;mpi_matmul<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
 </ul>
 <h2 id="三、实验结果与分析"><a href="#三、实验结果与分析" class="headerlink" title="三、实验结果与分析"></a>三、实验结果与分析</h2><h3 id="1-实验结果"><a href="#1-实验结果" class="headerlink" title="1. 实验结果"></a>1. 实验结果</h3><table>
 <thead>
@@ -758,6 +860,9 @@
 <!-- 代码块功能依赖 -->
 <script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
 
+
+  <!-- 是否加载使用自带的 prismjs. -->
+  <script type="text/javascript" src="/libs/prism/prism.min.js"></script>
 
 
 <!-- 代码语言 -->
